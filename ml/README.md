@@ -71,49 +71,14 @@ python3 train.py --with-seed --data external.jsonl --init-model expert.txt \
 - **FWAF** — `bad/goodqueries.txt`. The good set has around 1.3M entries, so subsample with `--good-sample`.
 - **PayloadsAllTheThings** — `*/Intruder/*.txt` by vector, giving attacks distributed across request parts.
 
-## Online retraining loop
+## Continuous retraining
 
-Fully automatic; an analyst only labels the quarantine:
+Quarantine review produces labelled examples over time. Export them periodically and
+warm-start from the previous model, as in section 3 above: each run takes seconds
+because it adds rounds to an existing model rather than training from scratch.
 
-```
-labelling -> /api/ml/label -> ml_feedback
-  -> (every RETRAIN_EVERY labels) control calls TRAINER_URL/train
-    -> trainer_service.py: pulls labels (/api/trainer/dataset),
-       warm-starts from the current model, exports,
-       publishes (/api/trainer/model) -> ml_models(active)
-         -> the node fetches the active model and hot-swaps it.
-```
-
-Run the trainer alongside control:
-
-```bash
-export TRAINER_TOKEN=$(openssl rand -hex 32)   # identical on control and trainer
-docker compose -f docker-compose.yml -f ml/docker-compose.trainer.yml up -d
-```
-
-Environment for **control**: `TRAINER_TOKEN`, `TRAINER_URL=http://trainer:8077`, `RETRAIN_EVERY=20`.
-
-Environment for the **trainer**: `CLOUD_URL`, `TRAINER_TOKEN`, and optionally `EXTERNAL_DATA`, `EXPERT_MODEL`, `CLIENT_WEIGHT`, `MIN_INTERVAL_SEC` (anti-churn, 300 s), `WORKERS`.
-
-Frequency is set by two things working together:
-
-- the trigger is every `RETRAIN_EVERY` (20) **new** labels since the last model, not a running total;
-- `MIN_INTERVAL_SEC` (300 s) is a floor, so bursts of labelling coalesce into one training run.
-
-Warm starting keeps each run cheap — seconds — which is what makes 20 labels per 5 minutes a comfortable cadence rather than a treadmill.
-
-### Sharding by tenant_id
-
-With many tenants, run several trainer replicas, each serving its own slice:
-
-```bash
-# control:
-TRAINER_URLS=http://trainer-0:8077,http://trainer-1:8077,http://trainer-2:8077
-# each replica:
-SHARD_INDEX=0  SHARD_COUNT=3     # and 1, 2 for the others
-```
-
-A tenant is routed to replica `FNV-1a(tenant_id) % N`, using the same hash on both sides. Each replica keeps its own init-model cache, so no shared volume is needed and there is no locking between replicas. See `docker-compose.trainer.yml`.
+Threatail Cloud automates this loop — labelling in the dashboard triggers retraining
+and the node picks up the new model without a restart.
 
 ## Deploying to a node manually
 
