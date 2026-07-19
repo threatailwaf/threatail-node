@@ -1512,7 +1512,7 @@ dependencies = [
 
 [[package]]
 name = "threatail-node"
-version = "1.1.31"
+version = "1.1.32"
 dependencies = [
  "arc-swap",
  "brotli",
