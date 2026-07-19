@@ -1,0 +1,10 @@
+# Online fine-tuning trainer service. Build from the ml/ directory.
+FROM python:3.11-slim
+WORKDIR /app
+RUN pip install --no-cache-dir lightgbm numpy
+COPY features.py train.py expert_seed.py synth.py datasets.py trainer_service.py ./
+# external.jsonl (CSIC/FWAF/PAT) and expert.txt can be supplied via a volume
+ENV PORT=8077 MODELS_DIR=/data/models
+VOLUME ["/data"]
+EXPOSE 8077
+CMD ["python3", "trainer_service.py"]

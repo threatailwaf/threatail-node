@@ -1,0 +1,39 @@
+# Rust
+/target/
+**/*.rs.bk
+
+# Build artefacts and release staging
+/dist/
+
+# Local configuration — never commit a real config, it holds backends,
+# secrets and customer domains
+/config.json
+/*.local.json
+
+# ML: trained models and corpora are large and often contain customer traffic
+/ml/*.txt
+/ml/*.jsonl
+/ml/models/
+/ml/__pycache__/
+**/__pycache__/
+*.py[cod]
+
+# Trained model output (the placeholder src/default_model.json IS tracked)
+/model.json
+/expert.model.json
+
+# GeoIP databases (licensed, redistribute at your own risk)
+*.mmdb
+*.mmdb.gz
+
+# TLS material — must never reach the repository
+*.pem
+*.key
+*.crt
+*.p12
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/
+*.swp

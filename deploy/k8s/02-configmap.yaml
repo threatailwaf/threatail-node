@@ -1,0 +1,29 @@
+# The node's configuration. This is the same file format as config.example.json.
+# Edit the domain and backends, then apply.
+#
+# The node re-reads this file only on start, so roll the deployment after changes:
+#   kubectl -n threatail rollout restart deployment/threatail-node
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: threatail-config
+  namespace: threatail
+data:
+  config.json: |
+    {
+      "listen_http": "0.0.0.0:8080",
+      "listen_https": "0.0.0.0:8443",
+      "metrics_listen": "0.0.0.0:9100",
+      "sites": [
+        {
+          "domain": "example.com",
+          "backends": ["http://my-app.default.svc.cluster.local:80"],
+          "mode": "detect",
+          "sec_headers": true,
+          "allowed_methods": ["GET", "HEAD", "POST", "OPTIONS"],
+          "rate_rules": [
+            { "location": "/api/", "operator": "prefix", "rps": 20, "burst": 40, "key": "ip" }
+          ]
+        }
+      ]
+    }

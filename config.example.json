@@ -1,0 +1,131 @@
+{
+  "listen_http": "0.0.0.0:80",
+  "listen_https": "0.0.0.0:443",
+  "certs": [
+    {
+      "domains": [
+        "example.com",
+        "www.example.com"
+      ],
+      "cert_file": "/etc/threatail/certs/example.com.crt",
+      "key_file": "/etc/threatail/certs/example.com.key"
+    }
+  ],
+  "http2_enabled": true,
+  "metrics_listen": "127.0.0.1:9100",
+  "metrics_token": "change-me-or-keep-the-port-internal",
+  "geoip_db": "/var/lib/threatail/GeoLite2-Country.mmdb",
+  "iprep_file": "",
+  "managed_rules_file": "",
+  "fpfeed_file": "",
+  "sites": [
+    {
+      "domain": "example.com",
+      "backends": [
+        "http://127.0.0.1:8080"
+      ],
+      "mode": "detect",
+      "force_https": true,
+      "sec_headers": true,
+      "allowed_methods": [
+        "GET",
+        "HEAD",
+        "POST",
+        "OPTIONS"
+      ],
+      "trusted_proxies": [],
+      "ip_whitelist": [],
+      "ip_blacklist": [],
+      "bot_mode": "detect",
+      "verbot_enabled": true,
+      "verbot_spoof_action": "detect",
+      "geo_mode": "off",
+      "geo_countries": [],
+      "rate_rules": [
+        {
+          "location": "/api/",
+          "operator": "prefix",
+          "rps": 20,
+          "burst": 40,
+          "key": "ip",
+          "action": "block"
+        },
+        {
+          "location": "/login",
+          "operator": "prefix",
+          "rps": 3,
+          "burst": 5,
+          "key": "ip",
+          "action": "challenge"
+        }
+      ],
+      "custom_rules": [
+        {
+          "field": "path",
+          "operator": "prefix",
+          "value": "/.git",
+          "action": "block",
+          "sig": "sensitive-path"
+        },
+        {
+          "field": "useragent",
+          "operator": "contains",
+          "value": "sqlmap",
+          "action": "block",
+          "sig": "scanner"
+        }
+      ],
+      "exceptions": [
+        {
+          "field": "path",
+          "operator": "prefix",
+          "value": "/webhooks/stripe",
+          "action": "pass"
+        }
+      ],
+      "ato_enabled": true,
+      "ato_login_paths": [
+        "/login",
+        "/api/auth"
+      ],
+      "body_limit": 65536,
+      "body_tail_kb": 32,
+      "body_oversized": 1,
+      "upstream_timeout": 30,
+      "body_read_timeout": 30,
+      "traversal_logonly": false,
+      "method_logonly": false,
+      "ipv6_logonly": false,
+      "anomaly_sens": "medium",
+      "anomaly_block": false,
+      "ml_trusted_ips": [],
+      "api_jwt_enabled": false,
+      "api_jwt_paths": [
+        "/api/"
+      ],
+      "api_jwt_require": true,
+      "api_jwt_algs": [
+        "rs256",
+        "es256"
+      ],
+      "api_jwt_leeway": 60,
+      "api_jwt_logonly": true,
+      "api_jwt_verify_sig": false,
+      "api_jwt_secret": "",
+      "api_jwt_jwks_url": "",
+      "api_json_enabled": false,
+      "api_json_max_depth": 20,
+      "api_json_max_keys": 1000,
+      "api_json_max_array": 1000,
+      "api_json_max_str": 16384,
+      "api_json_require_valid": true,
+      "api_json_logonly": true,
+      "api_schema_enabled": false,
+      "api_schema_logonly": true,
+      "api_schema_params": true,
+      "api_schema_body": false,
+      "api_schema_spec": "",
+      "mtls_ca_file": ""
+    }
+  ]
+}

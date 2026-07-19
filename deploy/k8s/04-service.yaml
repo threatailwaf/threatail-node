@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: threatail-node
+  namespace: threatail
+spec:
+  # LoadBalancer puts the node directly in front of client traffic.
+  # Use ClusterIP instead if an ingress controller terminates TLS ahead of it.
+  type: LoadBalancer
+  externalTrafficPolicy: Local   # preserves the client source IP
+  selector:
+    app.kubernetes.io/name: threatail-node
+  ports:
+    - { name: http,  port: 80,  targetPort: http }
+    - { name: https, port: 443, targetPort: https }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: threatail-metrics
+  namespace: threatail
+  labels:
+    app.kubernetes.io/name: threatail-node
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: threatail-node
+  ports:
+    - { name: metrics, port: 9100, targetPort: metrics }

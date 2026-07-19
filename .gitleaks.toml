@@ -1,0 +1,26 @@
+# Gitleaks configuration for threatail-node.
+#
+# The scanner flags high-entropy strings, and the ML training corpus is full of
+# them by design: it contains realistic request samples so the model learns what
+# normal traffic looks like. The allowlist below is deliberately narrow — it
+# permits specific known-safe patterns rather than muting whole files, so a real
+# credential committed to ml/ would still be caught.
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "generic-api-key"
+description = "Generic API key"
+regex = '''(?i)(?:key|api|token|secret|client|passwd|password|auth|access)(?:[0-9a-z\-_\t .]{0,20})(?:[\s|']|[\s|"]){0,3}(?:=|>|:{1,3}=|\|\||:|<=|=>|:=)(?:'|\"|\s|=|\x60){0,5}([0-9a-z\-_.=]{10,150})(?:['|\"|\n|\r|\s|\x60|;]|$)'''
+keywords = ["key", "api", "token", "secret", "client", "passwd", "password", "auth", "access"]
+
+  [rules.allowlist]
+  description = "JWT headers in the ML training corpus are public boilerplate, not secrets"
+  paths = ['''ml/expert_seed\.py''', '''ml/synth\.py''', '''ml/datasets\.py''']
+  # {"alg":"HS256","typ":"JWT"} and {"typ":"JWT","alg":"HS256"} — header only,
+  # no payload and no signature segment.
+  regexes = [
+    '''eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9''',
+    '''eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9''',
+  ]

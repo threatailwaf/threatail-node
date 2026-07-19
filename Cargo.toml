@@ -1,0 +1,42 @@
+[package]
+license = "Apache-2.0"
+name = "threatail-node"
+version = "1.1.31"
+edition = "2021"
+description = "Self-hosted WAF node: signatures, ML detection, bot and API protection, mTLS and DLP"
+
+[[bin]]
+name = "threatail-node"
+path = "src/main.rs"
+
+[dependencies]
+tokio = { version = "1", features = ["full"] }
+hyper = { version = "1", features = ["full"] }
+hyper-util = { version = "0.1", features = ["full"] }
+http-body-util = "0.1"
+bytes = "1"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+rustls = { version = "0.23", default-features = false, features = ["ring", "std", "logging", "tls12"] }
+tokio-rustls = { version = "0.26", default-features = false, features = ["ring", "logging", "tls12"] }
+regex = "1"
+maxminddb = "0.28"
+reqwest = { version = "0.13", default-features = false, features = ["json", "rustls", "rustls-native-certs"] }
+arc-swap = "1"
+dashmap = "6"
+dns-lookup = "2"
+flate2 = "1"
+brotli = "7"
+sha2 = "0.11"
+hmac = "0.13"
+hex = "0.4"
+ring = "0.17"
+hyper-rustls = { version = "0.27", default-features = false, features = ["ring", "http1", "tls12", "native-tokio"] }
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 1
+strip = true

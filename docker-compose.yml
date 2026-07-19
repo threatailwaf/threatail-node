@@ -1,0 +1,27 @@
+services:
+  threatail:
+    build: .
+    # Or use a published image instead of building:
+    # image: ghcr.io/threatailwaf/threatail-node:latest
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      # Your config. Start from config.example.json.
+      - ./config.json:/etc/threatail/config.json:ro
+      # Persists the anomaly profile and other learned state across restarts.
+      - threatail-data:/var/lib/threatail
+    # Uncomment to attach to Threatail Cloud instead of the local config file.
+    # environment:
+    #   THREATAIL_CLOUD_URL: https://lk.threatail.com
+    #   THREATAIL_ENROLLMENT_TOKEN: your-token
+
+  # Example backend so the stack is runnable as-is. Replace with your app,
+  # and point "backends" in config.json at http://backend:80
+  backend:
+    image: nginxdemos/hello:plain-text
+    restart: unless-stopped
+
+volumes:
+  threatail-data:

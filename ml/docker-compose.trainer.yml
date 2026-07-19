@@ -1,0 +1,46 @@
+# Online fine-tuning trainer. One replica by default. To scale, shard
+# by tenant_id: run N replicas with SHARD_INDEX=0..N-1 and SHARD_COUNT=N, then list
+# their addresses in control: TRAINER_URLS=http://trainer-0:8077,http://trainer-1:8077,...
+# The cloud routes each tenant to its shard automatically (FNV-1a over tenant_id).
+#
+# Running a single replica: cd threatail-node/ml
+#   TRAINER_TOKEN=<same as control> docker compose -f docker-compose.trainer.yml up -d --build
+x-trainer-base: &trainer-base
+  build: { context: ., dockerfile: Dockerfile.trainer }
+  environment: &trainer-env
+    CLOUD_URL: "${CLOUD_URL:-http://threatail-control:8800}"
+    TRAINER_TOKEN: "${TRAINER_TOKEN}"
+    EXTERNAL_DATA: "/data/external.jsonl"
+    EXPERT_MODEL: "/data/expert.txt"
+    CLIENT_WEIGHT: "6"
+    ROUNDS: "120"
+    MIN_INTERVAL_SEC: "300"
+    WORKERS: "1"
+  restart: unless-stopped
+
+services:
+  # single replica, no sharding
+  trainer:
+    <<: *trainer-base
+    container_name: threatail-trainer
+    environment:
+      <<: *trainer-env
+      SHARD_COUNT: "0"
+    volumes: [ "trainer-data:/data" ]
+    ports: [ "8077:8077" ]
+
+  # ── example of sharding across 2 replicas (uncomment, remove the trainer service above,
+  #    and set in control: TRAINER_URLS=http://trainer-0:8077,http://trainer-1:8077) ──
+  # trainer-0:
+  #   <<: *trainer-base
+  #   environment: { <<: *trainer-env, SHARD_INDEX: "0", SHARD_COUNT: "2" }
+  #   volumes: [ "trainer0-data:/data" ]
+  # trainer-1:
+  #   <<: *trainer-base
+  #   environment: { <<: *trainer-env, SHARD_INDEX: "1", SHARD_COUNT: "2" }
+  #   volumes: [ "trainer1-data:/data" ]
+
+volumes:
+  trainer-data:
+  # trainer0-data:
+  # trainer1-data:
