@@ -11,7 +11,6 @@
   <a href="docs/deployment.md">Deployment</a> ·
   <a href="docs/detection.md">What it detects</a> ·
   <a href="docs/faq.md">FAQ</a> ·
-  <a href="README.ru.md">Русский</a>
 </p>
 
 <p align="center">
